@@ -37,6 +37,8 @@ func main() {
 
 	r.GET("/api/confirm/:token", handler.ConfirmSubscription)
 
+	r.GET("/api/unsubscribe/:token", handler.Unsubscribe)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

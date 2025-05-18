@@ -54,3 +54,22 @@ func (r *SubscriptionRepository) ConfirmByToken(ctx context.Context, token strin
 
 	return nil
 }
+
+func (r *SubscriptionRepository) DeleteByToken(ctx context.Context, token string) error {
+	query := `DELETE FROM subscriptions WHERE token = $1`
+	result, err := r.DB.ExecContext(ctx, query, token)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
