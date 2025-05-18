@@ -73,3 +73,28 @@ func (r *SubscriptionRepository) DeleteByToken(ctx context.Context, token string
 
 	return nil
 }
+
+func (r *SubscriptionRepository) GetConfirmedSubscriptionsByFrequency(ctx context.Context, frequency string) ([]*models.Subscription, error) {
+	query := `
+		SELECT * FROM subscriptions
+		WHERE confirmed = true AND frequency = $1
+	`
+	rows, err := r.DB.QueryContext(ctx, query, frequency)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var subs []*models.Subscription
+	for rows.Next() {
+		var s models.Subscription
+		if err := rows.Scan(
+			&s.ID, &s.Email, &s.City, &s.Frequency, &s.Confirmed, &s.Token, &s.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		subs = append(subs, &s)
+	}
+
+	return subs, nil
+}

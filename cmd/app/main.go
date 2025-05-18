@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 	"log"
 	"os"
 	"weather/internal/db"
 	"weather/internal/handlers"
+	"weather/internal/tasks"
 )
 
 func main() {
@@ -29,6 +31,20 @@ func main() {
 
 	weatherRepo := db.NewWeatherRepository(database)
 	weatherHandler := handlers.NewWeatherHandler(weatherRepo)
+
+	weatherUpdater := tasks.NewWeatherUpdater(repo, weatherRepo)
+
+	c := cron.New()
+
+	c.AddFunc("@every 1m", func() {
+		weatherUpdater.SendWeatherFromCacheByFrequency("hourly")
+	})
+
+	c.AddFunc("@every 24h", func() {
+		weatherUpdater.SendWeatherFromCacheByFrequency("daily")
+	})
+
+	c.Start()
 
 	r := gin.Default()
 

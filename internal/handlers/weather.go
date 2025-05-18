@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 	"weather/internal/db"
-	error "weather/internal/errors"
+	apierr "weather/internal/errors"
 )
 
 type WeatherHandler struct {
@@ -21,7 +21,7 @@ func NewWeatherHandler(repo *db.WeatherRepository) *WeatherHandler {
 func (h *WeatherHandler) GetCachedWeather(c *gin.Context) {
 	city := strings.TrimSpace(c.Query("city"))
 	if city == "" {
-		error.Respond(c, error.New(http.StatusBadRequest, "City query parameter is required"))
+		apierr.Respond(c, apierr.New(http.StatusBadRequest, "City query parameter is required"))
 		return
 	}
 
@@ -30,12 +30,12 @@ func (h *WeatherHandler) GetCachedWeather(c *gin.Context) {
 
 	weather, err := h.WeatherRepo.GetCached(ctx, city)
 	if err != nil {
-		error.Respond(c, error.New(http.StatusInternalServerError, "Failed to get weather"))
+		apierr.Respond(c, apierr.New(http.StatusInternalServerError, "Failed to get weather"))
 		return
 	}
 
 	if weather == nil {
-		error.Respond(c, error.New(http.StatusNotFound, "Weather data not found for this city"))
+		apierr.Respond(c, apierr.New(http.StatusNotFound, "Weather data not found for this city"))
 		return
 	}
 

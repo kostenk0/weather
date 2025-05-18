@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
+	"log"
+	"strings"
 	"weather/internal/models"
 )
 
@@ -15,14 +17,21 @@ func NewWeatherRepository(db *sql.DB) *WeatherRepository {
 }
 
 func (r *WeatherRepository) GetCached(ctx context.Context, city string) (*models.Weather, error) {
-	query := `SELECT * FROM weather_cache WHERE city = $1`
+	city = strings.TrimSpace(city)
+
+	query := `SELECT *
+	          FROM weather_cache
+	          WHERE LOWER(city) = LOWER($1)`
+
 	row := r.DB.QueryRowContext(ctx, query, city)
 
 	var w models.Weather
 	err := row.Scan(&w.City, &w.Temperature, &w.Humidity, &w.Description, &w.UpdatedAt)
 	if err == sql.ErrNoRows {
+		log.Println("[DEBUG] No weather found in cache")
 		return nil, nil
 	} else if err != nil {
+		log.Printf("[DEBUG] Scan error: %v", err)
 		return nil, err
 	}
 

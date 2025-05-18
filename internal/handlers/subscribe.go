@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 	"weather/internal/db"
-	error "weather/internal/errors"
+	apierr "weather/internal/errors"
 	"weather/internal/models"
 )
 
@@ -28,7 +28,7 @@ func (h *SubscriptionHandler) Subscribe(c *gin.Context) {
 	}
 
 	if err := c.ShouldBind(&req); err != nil {
-		error.Respond(c, error.New(http.StatusBadRequest, "Invalid input"))
+		apierr.Respond(c, apierr.New(http.StatusBadRequest, "Invalid input"))
 		return
 	}
 
@@ -47,9 +47,9 @@ func (h *SubscriptionHandler) Subscribe(c *gin.Context) {
 
 	if err := h.Repo.Create(ctx, sub); err != nil {
 		if strings.Contains(err.Error(), "Duplicate key") {
-			error.Respond(c, error.New(http.StatusConflict, "Email already subscribed"))
+			apierr.Respond(c, apierr.New(http.StatusConflict, "Email already subscribed"))
 		} else {
-			error.Respond(c, error.New(http.StatusInternalServerError, "Failed to create subscription"))
+			apierr.Respond(c, apierr.New(http.StatusInternalServerError, "Failed to create subscription"))
 		}
 		return
 	}
