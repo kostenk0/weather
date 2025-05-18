@@ -1,21 +1,55 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+	"weather/internal/db"
+	"weather/internal/handlers"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
-
 func main() {
-	//TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-	// to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-	s := "gopher"
-	fmt.Printf("Hello and welcome, %s!\n", s)
+	_ = godotenv.Load()
 
-	for i := 1; i <= 5; i++ {
-		//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-		fmt.Println("i =", 100/i)
+	database, err := db.Connect()
+	if err != nil {
+		log.Fatalf("DB error: %v", err)
+	}
+	defer func(database *sql.DB) {
+		err := database.Close()
+		if err != nil {
+			log.Fatalf("DB close: %v", err)
+		}
+	}(database)
+
+	repo := db.NewSubscriptionRepository(database)
+	handler := handlers.NewSubscriptionHandler(repo)
+
+	weatherRepo := db.NewWeatherRepository(database)
+	weatherHandler := handlers.NewWeatherHandler(weatherRepo)
+
+	r := gin.Default()
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
+	r.POST("/api/subscribe", handler.Subscribe)
+
+	r.GET("/api/confirm/:token", handler.ConfirmSubscription)
+
+	r.GET("/api/unsubscribe/:token", handler.Unsubscribe)
+
+	r.GET("/api/weather", weatherHandler.GetCachedWeather)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	if err := r.Run(":" + port); err != nil {
+		log.Fatal(err)
 	}
 }
