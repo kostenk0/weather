@@ -6,12 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+	error "weather/internal/errors"
 )
 
 func (h *SubscriptionHandler) Unsubscribe(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing token"})
+		error.Respond(c, error.New(http.StatusBadRequest, "Missing token"))
 		return
 	}
 
@@ -20,10 +21,10 @@ func (h *SubscriptionHandler) Unsubscribe(c *gin.Context) {
 
 	err := h.Repo.DeleteByToken(ctx, token)
 	if err == sql.ErrNoRows {
-		c.JSON(http.StatusNotFound, gin.H{"error": "invalid token"})
+		error.Respond(c, error.New(http.StatusNotFound, "Token not found"))
 		return
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
+		error.Respond(c, error.New(http.StatusInternalServerError, "Failed to unsubscribe"))
 		return
 	}
 

@@ -3,15 +3,17 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+	error "weather/internal/errors"
 )
 
 func (h *SubscriptionHandler) ConfirmSubscription(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing token"})
+		error.Respond(c, error.New(http.StatusBadRequest, "Missing token"))
 		return
 	}
 
@@ -19,11 +21,11 @@ func (h *SubscriptionHandler) ConfirmSubscription(c *gin.Context) {
 	defer cancel()
 
 	err := h.Repo.ConfirmByToken(ctx, token)
-	if err == sql.ErrNoRows {
-		c.JSON(http.StatusNotFound, gin.H{"error": "invalid or already confirmed token"})
+	if errors.Is(err, sql.ErrNoRows) {
+		error.Respond(c, error.New(http.StatusNotFound, "Invalid or already confirmed token"))
 		return
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
+		error.Respond(c, error.New(http.StatusInternalServerError, "Failed to confirm subscription"))
 		return
 	}
 
