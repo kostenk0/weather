@@ -36,8 +36,21 @@ func (r *SubscriptionRepository) GetByToken(ctx context.Context, token string) (
 	return &s, nil
 }
 
-func (r *SubscriptionRepository) Confirm(ctx context.Context, token string) error {
-	query := `UPDATE subscriptions SET confirmed = true WHERE token = $1`
-	_, err := r.DB.ExecContext(ctx, query, token)
-	return err
+func (r *SubscriptionRepository) ConfirmByToken(ctx context.Context, token string) error {
+	query := `UPDATE subscriptions SET confirmed = true WHERE token = $1 AND confirmed = false`
+	result, err := r.DB.ExecContext(ctx, query, token)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return sql.ErrNoRows // або кастомна помилка
+	}
+
+	return nil
 }

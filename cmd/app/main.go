@@ -35,6 +35,8 @@ func main() {
 
 	r.POST("/api/subscribe", handler.Subscribe)
 
+	r.GET("/api/confirm/:token", handler.ConfirmSubscription)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
