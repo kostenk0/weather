@@ -27,6 +27,9 @@ func main() {
 	repo := db.NewSubscriptionRepository(database)
 	handler := handlers.NewSubscriptionHandler(repo)
 
+	weatherRepo := db.NewWeatherRepository(database)
+	weatherHandler := handlers.NewWeatherHandler(weatherRepo)
+
 	r := gin.Default()
 
 	r.GET("/health", func(c *gin.Context) {
@@ -38,6 +41,8 @@ func main() {
 	r.GET("/api/confirm/:token", handler.ConfirmSubscription)
 
 	r.GET("/api/unsubscribe/:token", handler.Unsubscribe)
+
+	r.GET("/api/weather", weatherHandler.GetCachedWeather)
 
 	port := os.Getenv("PORT")
 	if port == "" {
