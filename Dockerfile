@@ -2,8 +2,11 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
+COPY web/static ./web/static
+
 COPY go.mod go.sum ./
 RUN go mod download
+
 
 COPY . .
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
@@ -14,6 +17,7 @@ FROM alpine:latest
 RUN apk --no-cache add bash postgresql-client
 
 WORKDIR /root/
+COPY --from=builder /app/web/static ./web/static
 COPY --from=builder /app/weather .
 COPY --from=builder /go/bin/goose /usr/local/bin/goose
 COPY ./migrations ./migrations

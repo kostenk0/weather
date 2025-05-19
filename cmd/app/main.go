@@ -6,7 +6,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 	"log"
-	"os"
+	"net/http"
+	"weather/internal/config"
 	"weather/internal/db"
 	"weather/internal/handlers"
 	"weather/internal/tasks"
@@ -14,6 +15,7 @@ import (
 
 func main() {
 	_ = godotenv.Load()
+	config.Init()
 
 	database, err := db.Connect()
 	if err != nil {
@@ -48,6 +50,11 @@ func main() {
 
 	r := gin.Default()
 
+	r.Static("/static", "./web/static")
+	r.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/static/index.html")
+	})
+
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
@@ -58,14 +65,9 @@ func main() {
 
 	r.GET("/api/unsubscribe/:token", handler.Unsubscribe)
 
-	r.GET("/api/weather", weatherHandler.GetCachedWeather)
+	r.GET("/api/weather", weatherHandler.GetWeather)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	if err := r.Run(":" + port); err != nil {
+	if err := r.Run(":" + config.App.Port); err != nil {
 		log.Fatal(err)
 	}
 }

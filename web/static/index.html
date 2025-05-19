@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        input, select, button {
+            display: block;
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .message {
+            margin-top: 15px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        hr {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Subscribe to Weather</h2>
+    <form id="subscribeForm">
+        <input name="email" placeholder="Your Email" required type="email"/>
+        <input name="city" placeholder="City" required type="text"/>
+        <select name="frequency" required>
+            <option value="">-- Select frequency --</option>
+            <option value="hourly">Hourly</option>
+            <option value="daily">Daily</option>
+        </select>
+        <button type="submit">Subscribe</button>
+    </form>
+    <div class="message" id="message"></div>
+
+    <hr/>
+
+    <h2>Check Weather</h2>
+    <form id="weatherForm">
+        <input id="weatherCity" placeholder="Enter City" required type="text"/>
+        <button type="submit">Get Weather</button>
+    </form>
+    <div class="message" id="weatherResult"></div>
+</div>
+
+<script>
+    const form = document.getElementById('subscribeForm');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        const res = await fetch('/api/subscribe', {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+            messageEl.textContent = 'Subscription successful! Check your email.';
+            form.reset();
+        } else {
+            messageEl.textContent = `Error: ${result.error || 'Unexpected error'}`;
+        }
+    });
+
+    const weatherForm = document.getElementById('weatherForm');
+    const weatherResult = document.getElementById('weatherResult');
+
+    weatherForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const city = document.getElementById('weatherCity').value;
+
+        const res = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+        const data = await res.json();
+
+        if (res.ok) {
+            weatherResult.innerHTML = `
+          🌤️ <strong>${data.city}</strong><br />
+          Temperature: ${data.temperature.toFixed(1)}°C<br />
+          Humidity: ${data.humidity}%<br />
+          Condition: ${data.description}
+        `;
+        } else {
+            weatherResult.textContent = `Error: ${data.error || 'Could not fetch weather'}`;
+        }
+    });
+</script>
+</body>
+</html>
