@@ -1,7 +1,6 @@
 # Mac OS X files
 .DS_Store
 
-.env
 # Binaries for programs and plugins
 *.exe
 *.exe~
