@@ -54,7 +54,6 @@ EMAIL_FROM=Weather Service &lt;your@email.com&gt;
 
 # Weather API
 WEATHER_API_KEY=your_weatherapi_com_key
-WEATHER_API_URL=https://api.weatherapi.com/v1
 </code></pre>
 
 ### 3. Run with Docker
