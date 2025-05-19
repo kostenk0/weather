@@ -42,9 +42,8 @@ cd weather-api
 
 <pre lang="dotenv"><code>
 # .env.example
-
-PORT=8080
 APP_BASE_URL=http://localhost:8080
+PORT=8080
 
 # SMTP (e.g. Gmail SMTP + App Password)
 SMTP_HOST=smtp.gmail.com
@@ -56,9 +55,6 @@ EMAIL_FROM=Weather Service &lt;your@email.com&gt;
 # Weather API
 WEATHER_API_KEY=your_weatherapi_com_key
 WEATHER_API_URL=https://api.weatherapi.com/v1
-
-# PostgreSQL connection string
-DATABASE_URL=postgres://weather_user:password@localhost:5432/weatherdb?sslmode=disable
 </code></pre>
 
 ### 3. Run with Docker
