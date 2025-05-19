@@ -38,7 +38,7 @@ func main() {
 
 	c := cron.New()
 
-	c.AddFunc("@every 1m", func() {
+	c.AddFunc("@every 1h", func() {
 		weatherUpdater.SendWeatherFromCacheByFrequency("hourly")
 	})
 
